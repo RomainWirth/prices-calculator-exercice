@@ -5,8 +5,8 @@ package prices
 import (
 	"bufio" // lecture ligne par ligne du fichier
 	"fmt"
-	"os" // accès au système de fichiers
-	"strconv"
+	"os"      // accès au système de fichiers
+	"strconv" // conversion des lignes texte en float64
 )
 
 // TaxIncludedPriceJob représente un travail de calcul de prix TTC.
@@ -17,9 +17,11 @@ type TaxIncludedPriceJob struct {
 	TaxIncludedPrices map[string]float64 // résultats : clé = prix HT formaté, valeur = prix TTC
 }
 
-// LoadData lit le fichier "prices.txt" ligne par ligne et charge les prix HT dans le job.
-// Chaque ligne du fichier doit contenir un prix (format texte).
-// En cas d'erreur d'ouverture ou de lecture, un message est affiché et la fonction retourne sans modifier le job.
+// LoadData lit le fichier "prices.txt" ligne par ligne et charge les prix HT dans job.InputPrices.
+// Chaque ligne du fichier doit contenir un prix numérique (ex: "9.99").
+// Le récepteur est un pointeur (*TaxIncludedPriceJob) pour que la modification de job.InputPrices
+// soit visible en dehors de la méthode.
+// En cas d'erreur d'ouverture, de lecture ou de conversion, un message est affiché et la fonction retourne.
 func (job *TaxIncludedPriceJob) LoadData() {
 	// ouverture du fichier contenant les prix HT
 	file, err := os.Open("prices.txt")
@@ -46,12 +48,15 @@ func (job *TaxIncludedPriceJob) LoadData() {
 		return
 	}
 
+	// allocation d'une slice de float64 de la même taille que le nombre de lignes lues
 	prices := make([]float64, len(lines))
 
 	for lineIndex, line := range lines {
+		// conversion de la ligne texte en float64 (précision 64 bits)
 		floatPrice, err := strconv.ParseFloat(line, 64)
 
 		if err != nil {
+			// la ligne ne contient pas un nombre valide : on ferme le fichier et on abandonne
 			fmt.Printf("Erreur de conversion du prix à la ligne %d : %s\n", lineIndex+1, err)
 			file.Close()
 			return
@@ -60,13 +65,16 @@ func (job *TaxIncludedPriceJob) LoadData() {
 		prices[lineIndex] = floatPrice
 	}
 
+	// mise à jour du job avec les prix lus depuis le fichier (possible grâce au récepteur pointeur)
 	job.InputPrices = prices
 }
 
-// Process calcule les prix TTC pour chaque prix HT de InputPrices
+// Process charge les prix HT depuis le fichier, puis calcule les prix TTC pour chacun
 // en appliquant la formule : prixTTC = prix * (1 + TaxRate).
-// Les résultats sont stockés dans TaxIncludedPrices avec le prix HT (formaté à 2 décimales) comme clé.
-func (job TaxIncludedPriceJob) Process() {
+// Le récepteur est un pointeur pour permettre à LoadData de mettre à jour job.InputPrices.
+// Les résultats sont affichés sous forme de map (clé = prix HT à 2 décimales, valeur = prix TTC).
+func (job *TaxIncludedPriceJob) Process() {
+	// chargement des prix HT depuis prices.txt avant le calcul
 	job.LoadData()
 
 	result := make(map[string]float64)
