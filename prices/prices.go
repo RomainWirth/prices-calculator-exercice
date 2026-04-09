@@ -77,10 +77,11 @@ func (job *TaxIncludedPriceJob) Process() {
 	// chargement des prix HT depuis prices.txt avant le calcul
 	job.LoadData()
 
-	result := make(map[string]float64)
+	result := make(map[string]string)
 	for _, price := range job.InputPrices {
+		taxIncludedPrice := price * (1 + job.TaxRate)
 		// clé : prix HT formaté à 2 décimales pour garantir l'unicité et la lisibilité
-		result[fmt.Sprintf("%.2f", price)] = price * (1 + job.TaxRate)
+		result[fmt.Sprintf("%.2f", price)] = fmt.Sprintf("%.2f", taxIncludedPrice)
 	}
 
 	fmt.Println(result)
