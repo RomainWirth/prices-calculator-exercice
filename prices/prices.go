@@ -3,24 +3,21 @@
 package prices
 
 import (
-	// lecture ligne par ligne du fichier
 	"fmt"
-	// accès au système de fichiers
-	// conversion des lignes texte en float64
+
 	"example.com/price-calculator/conversion"
 	"example.com/price-calculator/filemanager"
 )
 
-// TaxIncludedPriceJob représente un travail de calcul de prix TTC.
-// Il regroupe le taux de taxe, les prix HT en entrée et la map des prix TTC calculés.
 type TaxIncludedPriceJob struct {
-	TaxRate           float64           // taux de taxe à appliquer (ex: 0.2 pour 20%)
-	InputPrices       []float64         // liste des prix HT à traiter
-	TaxIncludedPrices map[string]string // résultats : clé = prix HT formaté, valeur = prix TTC
+	IOManager         filemanager.FileManager // gestionnaire de fichiers pour lire les prix HT et écrire les résultats
+	TaxRate           float64                 // taux de taxe à appliquer (ex: 0.2 pour 20%)
+	InputPrices       []float64               // liste des prix HT à traiter
+	TaxIncludedPrices map[string]string       // résultats : clé = prix HT formaté, valeur = prix TTC
 }
 
 func (job *TaxIncludedPriceJob) LoadData() {
-	lines, err := filemanager.ReadLines("prices.txt")
+	lines, err := job.IOManager.ReadLines()
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -47,11 +44,12 @@ func (job *TaxIncludedPriceJob) Process() {
 
 	job.TaxIncludedPrices = result
 
-	filemanager.WriteJSON(fmt.Sprintf("./results_json/tax_included_prices_%.2f.json", job.TaxRate*100), job)
+	job.IOManager.WriteResult(job)
 }
 
-func NewTaxIncludedPriceJob(taxRate float64) *TaxIncludedPriceJob {
+func NewTaxIncludedPriceJob(fm filemanager.FileManager, taxRate float64) *TaxIncludedPriceJob {
 	return &TaxIncludedPriceJob{
+		IOManager:   fm,
 		InputPrices: []float64{10, 20, 30}, // prix HT par défaut
 		TaxRate:     taxRate,
 	}

@@ -7,24 +7,25 @@ import (
 	"os"
 )
 
-func ReadLines(path string) ([]string, error) {
-	// ouverture du fichier contenant les prix HT
-	file, err := os.Open(path)
+type FileManager struct {
+	InputFilePath  string
+	OutputFilePath string
+}
+
+func (fm FileManager) ReadLines() ([]string, error) {
+	file, err := os.Open(fm.InputFilePath)
 	if err != nil {
 		return nil, errors.New("Erreur d'ouverture du fichier")
 	}
 
-	// scanner pour lire le fichier ligne par ligne
 	scanner := bufio.NewScanner(file)
 
 	var lines []string
 
-	// lecture de chaque ligne jusqu'à la fin du fichier
 	for scanner.Scan() {
 		lines = append(lines, scanner.Text())
 	}
 
-	// vérification d'une éventuelle erreur survenue pendant le scan
 	err = scanner.Err()
 	if err != nil {
 		file.Close()
@@ -35,8 +36,8 @@ func ReadLines(path string) ([]string, error) {
 	return lines, nil
 }
 
-func WriteJSON(path string, data interface{}) error {
-	file, err := os.Create(path)
+func (fm FileManager) WriteResult(data any) error {
+	file, err := os.Create(fm.OutputFilePath)
 	if err != nil {
 		return errors.New("Erreur de création du fichier")
 	}
@@ -50,4 +51,11 @@ func WriteJSON(path string, data interface{}) error {
 
 	file.Close()
 	return nil
+}
+
+func New(inputFilePath, outputFilePath string) *FileManager {
+	return &FileManager{
+		InputFilePath:  inputFilePath,
+		OutputFilePath: outputFilePath,
+	}
 }
