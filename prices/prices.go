@@ -10,10 +10,10 @@ import (
 )
 
 type TaxIncludedPriceJob struct {
-	IOManager         filemanager.FileManager // gestionnaire de fichiers pour lire les prix HT et écrire les résultats
-	TaxRate           float64                 // taux de taxe à appliquer (ex: 0.2 pour 20%)
-	InputPrices       []float64               // liste des prix HT à traiter
-	TaxIncludedPrices map[string]string       // résultats : clé = prix HT formaté, valeur = prix TTC
+	IOManager         filemanager.FileManager `json:"-"`                   // gestionnaire de fichiers pour lire les prix HT et écrire les résultats
+	TaxRate           float64                 `json:"tax_rate"`            // taux de taxe à appliquer (ex: 0.2 pour 20%)
+	InputPrices       []float64               `json:"input_prices"`        // liste des prix HT à traiter
+	TaxIncludedPrices map[string]string       `json:"tax_included_prices"` // résultats : clé = prix HT formaté, valeur = prix TTC
 }
 
 func (job *TaxIncludedPriceJob) LoadData() {
