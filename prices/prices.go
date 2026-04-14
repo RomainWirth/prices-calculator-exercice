@@ -35,6 +35,8 @@ func (job *TaxIncludedPriceJob) LoadData() error {
 func (job *TaxIncludedPriceJob) Process(doneChan chan bool, errorChan chan error) {
 	err := job.LoadData()
 
+	// errorChan <- errors.New("Nouvelle erreur fictive !")
+
 	if err != nil {
 		errorChan <- err
 		return
