@@ -19,6 +19,8 @@ func (fm FileManager) ReadLines() ([]string, error) {
 		return nil, errors.New("Erreur d'ouverture du fichier")
 	}
 
+	defer file.Close()
+
 	scanner := bufio.NewScanner(file)
 
 	var lines []string
@@ -29,11 +31,11 @@ func (fm FileManager) ReadLines() ([]string, error) {
 
 	err = scanner.Err()
 	if err != nil {
-		file.Close()
+		// file.Close()
 		return nil, errors.New("Erreur lors de la lecture du fichier")
 	}
 
-	file.Close()
+	// file.Close()
 	return lines, nil
 }
 
@@ -43,16 +45,18 @@ func (fm FileManager) WriteResult(data any) error {
 		return errors.New("Erreur de création du fichier")
 	}
 
+	defer file.Close()
+
 	time.Sleep(3 * time.Second)
 
 	encoder := json.NewEncoder(file)
 	err = encoder.Encode(data)
 	if err != nil {
-		file.Close()
+		// file.Close()
 		return errors.New("Erreur d'écriture dans le fichier")
 	}
 
-	file.Close()
+	// file.Close()
 	return nil
 }
 
